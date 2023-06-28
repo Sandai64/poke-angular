@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
-import { LucideAngularModule, Compass, Loader, FileQuestion } from 'lucide-angular';
+import { LucideAngularModule, Compass, Loader, FileQuestion, ChevronRight } from 'lucide-angular';
 import { PokemonCardComponent } from './pokemon-card/pokemon-card.component';
 
 @NgModule({
@@ -15,7 +15,7 @@ import { PokemonCardComponent } from './pokemon-card/pokemon-card.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    LucideAngularModule.pick({ Compass, Loader, FileQuestion }),
+    LucideAngularModule.pick({ Compass, Loader, FileQuestion, ChevronRight }),
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,16 +1,15 @@
-<div class="rounded-md shadow flex p-2 cursor-pointer">
+<div class="rounded-md shadow flex p-2 cursor-pointer relative">
     <div *ngIf="pokemon.sprite">
-        <img src="{{ pokemon.sprite.urlFront }}" class="w-16"/>
-        <img src="{{ pokemon.sprite.urlBack }}" class="w-16"/>
+        <img src="{{ pokemon.sprite.urlFront }}" class="w-24"/>
     </div>
 
     <div *ngIf="!pokemon.sprite">
-        <lucide-angular name="file-question" class="animate-pulse" size="64"/>
+        <lucide-angular name="file-question" class="animate-pulse" size="80"/>
     </div>
 
     <div class="flex flex-col w-full">
         <div class="flex justify-between items-center leading-none">
-            <span *ngIf="!pokemon.localizedName" class="text-lg">Loading...</span>
+            <!-- <span *ngIf="!pokemon.localizedName" class="text-lg italic">[Missing name]</span> -->
             <span *ngIf="pokemon.localizedName" class="text-lg">{{ pokemon.localizedName }}</span>
 
             <span *ngIf="!pokemon.index" class="text-sm font-light text-gray-500">#???</span>
@@ -19,4 +18,7 @@
         <p class="italic text-xs leading-none">"{{ pokemon.name }}"</p>
     </div>
 
+    <div class="absolute bottom-0 right-0 p-1">
+        <lucide-angular name="chevron-right"/>
+    </div>
 </div>
