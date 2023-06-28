@@ -7,7 +7,7 @@
 </header>
 
 <!-- Screen-wide loader -->
-<div *ngIf="isLoading" class="select-none bg-gray-600 bg-opacity-30 absolute h-screen w-screen top-0 flex items-center justify-center flex-col">
+<div *ngIf="isLoading" class="overflow-hidden select-none bg-gray-500 bg-opacity-50 absolute h-screen w-screen top-0 flex items-center justify-center flex-col">
   <lucide-angular name="loader" size="64" class="animate-spin"/>
   <p class="italic text-sm m-2">{{ loadingStatus }}</p>
 </div>
@@ -16,7 +16,16 @@
   <app-pokemon-card *ngFor="let pokemonItem of pagePokemonData"  [pokemon]="pokemonItem"/>
 </div>
 
+<!-- Pagination -->
+<div class="flex justify-center items-center">
+  <div class="mt-4 flex justify-center items-center w-max rounded-lg shadow overflow-hidden text-xl bg-slate-100 border">
+    <button type="button" [ngClass]="pageID === currentPage ? 'font-bold bg-black text-white' : ''" class="p-2" *ngFor="let pageID of paginationKeys" (click)="changePage(pageID)">{{ pageID + 1 }}</button>
+  </div>
+</div>
+
 <footer class="p-4 flex flex-col justify-center items-center font-light text-gray-500 select-none">
   <p>Erwan Egasse · ESGI B3 AL</p>
   <a href="https://erwan.sh/" class="text-xs">erwan.sh</a>
 </footer>
+
+
