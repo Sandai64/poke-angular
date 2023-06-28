@@ -9,7 +9,7 @@ export default interface Pokemon
 
     // Nullable members
     index: number|undefined|null;
-    localizedName: string|undefined|null;
+    localizedNames: Record<string, string>|undefined|null;
     sprite: PokemonSprite|undefined|null;
     abilities: Array<PokemonAbility>|undefined|null
     moves: Array<PokemonMove>|undefined|null

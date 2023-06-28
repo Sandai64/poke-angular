@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import Pokemon from './interfaces/pokemon';
+import { PokemonService } from './pokemon-service.service';
 
 @Component({
   selector: 'app-root',
@@ -7,117 +8,73 @@ import Pokemon from './interfaces/pokemon';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  // Members
   title: string = 'poke-angular';
-
   numberOfPokemons = 0;
-
-  
   isLoading: boolean = false;
-  loadingStatus: string = '';
-  
+  loadingStatus: string = '';  
   maxItemsOnPage: number = 100;
   currentPage: number = 0;
-  
   paginationKeys: Array<number> = [0];
-
   pagePokemonData: Array<Pokemon> = [];
 
+  // Services
+  pokemonService: PokemonService = new PokemonService();
+
+  // Methods
   async getPokeAPIData() : Promise<void>
   {
     this.isLoading = true;
-
     this.loadingStatus = 'Fetching all Pokémons on page...';
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${this.maxItemsOnPage}&offset=${this.maxItemsOnPage * (this.currentPage)}`);
 
-    this.loadingStatus = 'Deserializing data...';
-    const pokemonData = await response.json();
+    const pokemonData: Array<Pokemon>|null = await this.pokemonService.getAllPokemons(this.maxItemsOnPage, (this.maxItemsOnPage * this.currentPage));
 
-    pokemonData.results.forEach(async (item: any, index: number) => {
-      let pokemon: Pokemon = {
-        name: item.name,
-        index: null,
-        localizedName: null,
-        sprite: null,
-        abilities: null,
-        moves: null,
-        type: null,
-        weight: null
-      };
-
-      // console.log(`Load: IFace<Pokemon>: '${item.name}' [IDX#${index}]`);
-      // console.log(`Trigger: Promise: fetchDetailedPokemonData(name: '${item.name}', pageIDX: ${index})`);
-
-      // Trigger detailed async load
-      this.fetchDetailedPokemonData(item.name, index);
-
-      // Push & move on
-      this.pagePokemonData.push(pokemon)
-    });
-
-    this.pagePokemonData = pokemonData.results;
-    this.numberOfPokemons = pokemonData.count;
-    
-    this.isLoading = false;
-    // console.log(this.pagePokemonData);
-    this.paginationKeys = [...Array(Math.ceil(this.numberOfPokemons / this.maxItemsOnPage)).keys()];
-  }
-
-  async fetchDetailedPokemonData(name: string, pageIDX: number) : Promise<void>
-  {
-    let isInvalid = false;
-
-    const pokemonDetails = await (await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`)).json();
-    const pokemonSpecies = await (await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`)).json().catch(() => {
-      isInvalid = true;
-      // console.log("Err: Promise<fetchDetailedPokemonData>: Invalid pokemon-species for", name, "at pageIDX", pageIDX);
-    });
-
-    if (isInvalid)
+    if ( pokemonData === null )
     {
-      this.pagePokemonData[pageIDX].index = pokemonDetails.id;
+      console.error('AppComponent: getPokeAPIData(): error: pokemonData is null');
       return;
     }
 
-    const pokemonNames: Array<any> = pokemonSpecies.names;
+    this.pagePokemonData = pokemonData;
     
-    const localizedName = pokemonNames.filter((item: any) => {
-      return item.language.name === 'fr';
-    })[0].name;
+    this.isLoading = false;
+    this.loadingStatus = '';
+    this.paginationKeys = [...Array(Math.ceil(this.numberOfPokemons / this.maxItemsOnPage)).keys()];
 
-    const pokemonAbilities: Array<string> = [];
-
-    pokemonDetails.abilities.forEach((element: any) => {
-      pokemonAbilities.push(element.ability.name)
+    // Trigger async detailed data fetch
+    pokemonData.forEach((pokemon: Pokemon, pageIndex: number) => {
+      this.fetchDetailedPokemonData(pokemon.name, pageIndex);
     });
+  }
 
-    // console.log('localized name for IDX', pageIDX, '=', localizedName);
+  async fetchDetailedPokemonData(name: string, pageIndex: number) : Promise<void>
+  {
+    const fullPokemonData: Pokemon|null = await this.pokemonService.getDetailedPokemonInfo(name);
+    
+    if ( fullPokemonData == null )
+    {
+      console.error(`AppComponent: fetchDetailedPokemonData("${name}"): error: fullPokemonData is null`);
+      return;
+    }
 
-    this.pagePokemonData[pageIDX] = {
-      name: name,
-      index: pokemonDetails.id,
-      localizedName: localizedName,
-      sprite: {
-        urlFront: pokemonDetails.sprites.front_default,
-        urlBack: pokemonDetails.sprites.back_default,
-      },
-      abilities: [
-        {name: 'sdf', url: 'sss'}
-      ],
-      moves: null,
-      type: null,
-      weight: null
-    };
+    this.pagePokemonData[pageIndex] = fullPokemonData;
   }
 
   changePage(pageID: number) : void
   {
     if (pageID === this.currentPage) { return; }
-    
+   
+    this.isLoading = true;
+    this.pagePokemonData = [];
     this.currentPage = pageID;
     this.getPokeAPIData();
   }
 
-  ngOnInit() {
+  async fetchPokemonCount() : Promise<void> { this.numberOfPokemons = await this.pokemonService.getPokemonCount(); }
+
+  async ngOnInit()
+  {
+    await this.fetchPokemonCount();
     this.getPokeAPIData();
   }
 }

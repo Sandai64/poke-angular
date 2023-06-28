@@ -10,7 +10,7 @@ export class PokemonCardComponent {
   @Input() pokemon: Pokemon = {
     name: '',
     index: undefined,
-    localizedName: undefined,
+    localizedNames: undefined,
     sprite: undefined,
     abilities: undefined,
     moves: undefined,
