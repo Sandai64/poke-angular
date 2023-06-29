@@ -31,7 +31,7 @@ export class AppComponent {
 
     if ( pokemonData === null )
     {
-      console.error('AppComponent: getPokeAPIData(): error: pokemonData is null');
+      console.log('AppComponent: getPokeAPIData(): error: pokemonData is null');
       return;
     }
 
@@ -53,7 +53,7 @@ export class AppComponent {
     
     if ( fullPokemonData == null )
     {
-      console.error(`AppComponent: fetchDetailedPokemonData("${name}"): error: fullPokemonData is null`);
+      console.log(`AppComponent: fetchDetailedPokemonData("${name}"): error: fullPokemonData is null`);
       return;
     }
 
