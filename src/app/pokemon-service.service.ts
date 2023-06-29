@@ -12,9 +12,41 @@ export class PokemonService {
 
   async getPokemonCount() : Promise<number>
   {
+    const cachedPokemonCount = localStorage.getItem('metadata.count');
+
+    if ( cachedPokemonCount )
+    {
+      try
+      {
+        const deserializedCachedPokemonCount = JSON.parse(cachedPokemonCount);
+        const now = new Date().getTime();
+
+        if ( (deserializedCachedPokemonCount.createdAt - now) < 3600000)
+        {
+          console.log(`pokemon-service: serving cached pokemon count:`, deserializedCachedPokemonCount.data);
+          return deserializedCachedPokemonCount.data
+        }
+      }
+      catch
+      {
+        console.log('pokemon-service: getPokemonCount(): error when deserializing cached count');
+      }
+
+      console.log('pokemon-service: getPokemonCount(): invalidating cached data');
+      localStorage.removeItem('metadata.count');
+    }
+
     try
     {
-      return (await (await fetch(`${this.endpoint}/pokemon?limit=${1}`)).json()).count;
+      const pokemonCount = (await (await fetch(`${this.endpoint}/pokemon?limit=${1}`)).json()).count;
+
+      console.log('pokemon-service: caching pokemon count');
+      localStorage.setItem('metadata.count', JSON.stringify({
+        createdAt: new Date().getTime(),
+        data: pokemonCount,
+      }));
+
+      return pokemonCount;
     }
     catch
     {
@@ -78,6 +110,7 @@ export class PokemonService {
         // Only return if data isn't older than a day
         if (  (now - deserializedCachedPokemon.createdAt) < 86400000 )
         {
+          console.log(`pokemon-service: serving cached pokemon.${name}`);
           return deserializedCachedPokemon.data;
         } 
       }
