@@ -4,7 +4,7 @@
         <p class="italic leading-none text-gray-500 text-sm">Search, browse & save your favourite pokémons. {{ numberOfPokemons }} currently available.</p>
     </div>
 
-    <div class="flex items-center gap-4">
+    <div *ngIf="!isLoading" class="flex items-center gap-4">
         <!-- Pagination -->
         <div class="flex justify-center items-center">
         <div class="flex justify-center items-center w-max rounded-lg shadow overflow-hidden bg-gray-100 border overflow-x-scroll">
@@ -19,11 +19,14 @@
 <!-- Screen-wide loader -->
 <div *ngIf="isLoading" class="overflow-hidden select-none bg-opacity-50 fixed h-screen w-screen top-0 flex items-center justify-center flex-col">
     <lucide-angular name="loader" size="64" class="animate-spin"/>
+    <h2 class="text-2xl font-bold">Building cache ({{ loadingPercentage }}%)</h2>
     <p class="italic text-sm m-2">{{ loadingStatus }}</p>
+    <progress max="100" [value]="loadingPercentage"></progress>
+
 </div>
   
 <div *ngIf="!isLoading" class="p-4">
-    <h2 class="mb-4 text-sm">{{ pagePokemonData.length }} Pokémon(s) on this page (#<span class="font-semibold">{{ pagePokemonData.at(0)?.index ?? '???' }}</span> to #<span class="font-semibold">{{ pagePokemonData.at(-1)?.index ?? '???' }})</span></h2>
+    <h2 class="mb-4 text-sm">{{ pagePokemonData.length }} Pokémon(s) on this page (#<span class="font-semibold">{{ pagePokemonData.at(0)?.index ?? '???' }}</span> to #<span class="font-semibold">{{ pagePokemonData.at(-1)?.index ?? pagePokemonData.length }})</span></h2>
   
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
       <app-pokemon-card *ngFor="let pokemonItem of pagePokemonData"  [pokemon]="pokemonItem"/>
