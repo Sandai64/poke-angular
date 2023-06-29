@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import Pokemon from './interfaces/pokemon';
 import PokemonAbility from './interfaces/pokemon-ability';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PokemonService {
-  readonly endpoint = 'https://pokeapi.co/api/v2';
+  readonly endpoint: string = 'https://pokeapi.co/api/v2';
+  readonly enableCaching: boolean = true;
 
   constructor() { }
 
@@ -14,7 +16,7 @@ export class PokemonService {
   {
     const cachedPokemonCount = localStorage.getItem('metadata.count');
 
-    if ( cachedPokemonCount )
+    if ( cachedPokemonCount && this.enableCaching )
     {
       try
       {
@@ -40,11 +42,14 @@ export class PokemonService {
     {
       const pokemonCount = (await (await fetch(`${this.endpoint}/pokemon?limit=${1}`)).json()).count;
 
-      console.log('pokemon-service: caching pokemon count');
-      localStorage.setItem('metadata.count', JSON.stringify({
-        createdAt: new Date().getTime(),
-        data: pokemonCount,
-      }));
+      if ( this.enableCaching )
+      {
+        console.log('pokemon-service: caching pokemon count');
+        localStorage.setItem('metadata.count', JSON.stringify({
+          createdAt: new Date().getTime(),
+          data: pokemonCount,
+        }));
+      }
 
       return pokemonCount;
     }
@@ -60,14 +65,21 @@ export class PokemonService {
    * @param offset Pokémon ID offset (PokéAPI.co)
    * @returns Array of Pokemon with all values left undefined except `name`. Returns null if error.
    */
-  async getAllPokemons(limit: number, offset: number) : Promise<Pokemon[] | null>
+  async getAllPokemons(limit?: number|undefined, offset?: number|undefined) : Promise<Pokemon[] | null>
   {
     let httpResponse: any;
     let pokemonData: Array<Pokemon> = [];
 
     try
     {
-      httpResponse = (await (await fetch(`${this.endpoint}/pokemon?limit=${limit}&offset=${offset}`)).json()).results;
+      if ( ! limit && ! offset )
+      {
+        httpResponse = (await (await fetch(`${this.endpoint}/pokemon?limit=9999999`)).json()).results;
+      }
+      else
+      {
+        httpResponse = (await (await fetch(`${this.endpoint}/pokemon?limit=${limit}&offset=${offset}`)).json()).results;
+      }
     }
     catch
     {
@@ -100,7 +112,7 @@ export class PokemonService {
     // Check cache beforehand
     const cachedPokemon = localStorage.getItem(`pokemon.${name}`);
 
-    if ( cachedPokemon )
+    if ( cachedPokemon && this.enableCaching )
     {
       try
       {
@@ -165,14 +177,25 @@ export class PokemonService {
       weight: undefined
     };
 
-    // Store pokemon in cache w/ createdAt timestamp
-    const now = new Date().getTime();
-    console.log(`pokemon-service: caching pokemon.${name} with createdAt value`, now);
-    localStorage.setItem(`pokemon.${name}`, JSON.stringify({
-      createdAt: now,
-      data: pokemon,
-    }));
+    if ( this.enableCaching )
+    {
+      // Store pokemon in cache w/ createdAt timestamp
+      const now = new Date().getTime();
+      console.log(`pokemon-service: caching pokemon.${name} with createdAt value`, now);
+      localStorage.setItem(`pokemon.${name}`, JSON.stringify({
+        createdAt: now,
+        data: pokemon,
+      }));
+    }
 
     return pokemon;
   }
+
+  // pokemonObservable: Observable<unknown> = new Observable(
+  //   function subscribe(subscriber)
+  //   {
+  //     const allPokemons = this.
+  //     subscriber.next();
+  //   }
+  // );
 }
