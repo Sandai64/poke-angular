@@ -13,7 +13,7 @@
 </div>
 
 <div class="p-4">
-  <h2 class="mb-4 text-sm">{{ pagePokemonData.length }} Pokémon(s) on this page (#<span class="font-semibold">{{ pagePokemonData.at(0)!.index ?? '???' }}</span> to #<span class="font-semibold">{{ pagePokemonData.at(-1)!.index ?? '???' }})</span></h2>
+  <h2 class="mb-4 text-sm">{{ pagePokemonData.length }} Pokémon(s) on this page (#<span class="font-semibold">{{ pagePokemonData.at(0)?.index ?? '???' }}</span> to #<span class="font-semibold">{{ pagePokemonData.at(-1)?.index ?? '???' }})</span></h2>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
     <app-pokemon-card *ngFor="let pokemonItem of pagePokemonData"  [pokemon]="pokemonItem"/>
