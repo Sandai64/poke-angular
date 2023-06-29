@@ -1,0 +1,38 @@
+<header class="sticky top-0 bg-white bg-opacity-100 z-10 border-b py-2 px-4 flex select-none items-center shadow justify-between">
+    <div class="flex items-center gap-2">
+        <img src="../assets/logo.png" alt="PokeNG" class="h-8">
+        <p class="italic leading-none text-gray-500 text-sm">Search, browse & save your favourite pokémons. {{ numberOfPokemons }} currently available.</p>
+    </div>
+
+    <div class="flex items-center gap-4">
+        <!-- Pagination -->
+        <div class="flex justify-center items-center">
+        <div class="flex justify-center items-center w-max rounded-lg shadow overflow-hidden bg-gray-100 border overflow-x-scroll">
+            <button type="button" [ngClass]="pageID === currentPage ? 'font-bold bg-black text-white' : ''" class="p-2" *ngFor="let pageID of paginationKeys" (click)="changePage(pageID)">{{ pageID + 1 }}</button>
+        </div>
+        </div>
+        
+        <input type="search" name="Search Pokémon" id="pks" class="border rounded shadow bg-gray-100 py-1 px-2 w-64" placeholder="Search...">
+    </div>
+</header>
+
+<!-- Screen-wide loader -->
+<div *ngIf="isLoading" class="overflow-hidden select-none bg-opacity-50 fixed h-screen w-screen top-0 flex items-center justify-center flex-col">
+    <lucide-angular name="loader" size="64" class="animate-spin"/>
+    <p class="italic text-sm m-2">{{ loadingStatus }}</p>
+</div>
+  
+<div *ngIf="!isLoading" class="p-4">
+    <h2 class="mb-4 text-sm">{{ pagePokemonData.length }} Pokémon(s) on this page (#<span class="font-semibold">{{ pagePokemonData.at(0)?.index ?? '???' }}</span> to #<span class="font-semibold">{{ pagePokemonData.at(-1)?.index ?? '???' }})</span></h2>
+  
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+      <app-pokemon-card *ngFor="let pokemonItem of pagePokemonData"  [pokemon]="pokemonItem"/>
+    </div>
+  
+    <hr class="mt-4">
+  
+    <footer class="p-4 flex flex-col justify-center items-center font-light text-gray-500 select-none">
+      <p>Erwan Egasse · ESGI B3 AL</p>
+      <a href="https://erwan.sh/" class="text-xs">erwan.sh</a>
+    </footer>
+</div>
