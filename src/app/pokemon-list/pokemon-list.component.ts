@@ -9,93 +9,120 @@ import { PokemonService } from '../pokemon-service.service';
 })
 export class PokemonListComponent {
   // Members
-  loadingDone: boolean = false;
   fullPokemonData: Pokemon[] = [];
-  loadingPercentage: number = 0;
-  title: string = 'poke-angular';
-  numberOfPokemons = 0;
-  isLoading: boolean = false;
-  loadingStatus: string = '';  
-  maxItemsOnPage: number = 365;
-  currentPage: number = 0;
-  paginationKeys: Array<number> = [0];
   pagePokemonData: Array<Pokemon> = [];
 
+  // FLAGS/OVERLAYS
+  loaderOverlay = {
+    enabled: false,
+    header: '',
+    status: '',
+    percentage: 0,
+  };
+
+  errorOverlay = {
+    enabled: false,
+    status: '',
+  };
+
+  numberOfPokemons = 0;
   detailedPokemonCount: number = 0;
+
+  maxItemsOnPage: number = 250;
+
+  currentPage: number|null = null;
+  paginationKeys: Array<number>|null = null;
 
   // Services
   pokemonService: PokemonService = new PokemonService();
 
-  async delay(time: number) {
+
+  // Methods
+  async delay(time: number) : Promise<unknown>
+  {
     return new Promise(resolve => setTimeout(resolve, time));
   }
-  
-  // Methods
-  async getPokeAPIData() : Promise<void>
+
+  /**
+   * Should only be run once on `this.ngOnInit()`.
+   * DO NOT CALL THIS DIRECTLY !
+   */
+  async buildInitialPageCache() : Promise<void>
   {
-    this.isLoading = true;
-    this.loadingStatus = 'Fetching all Pokémons on page...';
+    console.log('pokemon-list: trigger: async buildInitialPageCache()');
 
-    const pokemonData: Array<Pokemon>|null = await this.pokemonService.getAllPokemons(this.maxItemsOnPage, (this.currentPage*this.maxItemsOnPage));
-    console.log(pokemonData);
+    // Loader overlay
+    this.loaderOverlay.enabled = true;
+    this.loaderOverlay.header = 'Building cache';
+    this.loaderOverlay.status = 'Fetching basic Pokémon info...';
 
-    if ( pokemonData === null )
+    // Store all pokémon data
+    this.fullPokemonData = await this.pokemonService.getAllPokemons() ?? [];
+
+    // Abort early, service call should work under normal conditions
+    if ( ! this.fullPokemonData )
     {
-      console.log('AppComponent: getPokeAPIData(): error: pokemonData is null');
+      this.loaderOverlay.enabled = false;
+      this.errorOverlay.enabled = true;
+      this.errorOverlay.status = 'Failed to fetch all pokémon data - did your internet connection go out ?';
+
       return;
     }
 
-    this.fullPokemonData = pokemonData;
-    this.pagePokemonData = pokemonData.slice((this.currentPage * this.maxItemsOnPage), this.maxItemsOnPage);
-    
+    // Build pagination keys
     this.paginationKeys = [...Array(Math.ceil(this.numberOfPokemons / this.maxItemsOnPage)).keys()];
-    
-    // Trigger async detailed data fetch
-    for (const [pageIndex, pokemonItem] of pokemonData.entries())
+
+    // Build detailed information for each fetched Pokémon ID
+    for (const [pokemonIDX, pokemonItem] of this.fullPokemonData.entries())
     {
-      this.loadingStatus = `Fetching details for Pokémon #${ pageIndex } ('${ pokemonItem.name }')`;
-      console.log('Fetching detailed data for pokemon', pokemonItem.name, 'at #IDX', pageIndex);
+      this.loaderOverlay.percentage = Math.floor((pokemonIDX / this.numberOfPokemons) * 100);
 
-      setTimeout(() => {
-        this.fetchDetailedPokemonData(pokemonItem.name, pageIndex).then(() => {
-          if ( pageIndex === pokemonData.length - 1 )
-          {
-            this.loadingPercentage = 0;
-            this.isLoading = false;
-            this.loadingDone = true;
-          }
-        });
-      }, pageIndex * 10);
-      
+      if ( pokemonIDX == this.numberOfPokemons - 1 )
+      {
+        this.loaderOverlay.status = 'Finalizing...';
+      }
+      else
+      {
+        this.loaderOverlay.status = `Dispatching worker for: ${pokemonItem.name}`;
+      }
+
+      this.pokemonService.getDetailedPokemonInfo(pokemonItem.name).then((detailedPokemonData: Pokemon|null) => {
+        if ( detailedPokemonData )
+        {
+          this.fullPokemonData![pokemonIDX] = detailedPokemonData;
+        }
+
+        if ( pokemonIDX === this.numberOfPokemons - 1 )
+        {
+          console.warn('--------------------');
+          console.warn('PokemonListComponent: Promise<getPokeApiData()>: fetchDetailedPokemonData() completed, current status of [this]:', this);
+          console.warn('--------------------');
+
+          this.loaderOverlay.percentage = 0;
+          this.loaderOverlay.header = '';
+          this.loaderOverlay.enabled = false;
+          // this.loadingDone = true;
+
+          // Delegate page construction
+          this.changePage(0);
+        }
+      });
+
     }
-    
-    this.loadingStatus = '';
-  }
-
-  async fetchDetailedPokemonData(name: string, pageIndex: number) : Promise<void>
-  {
-    this.loadingStatus = name;
-    const fullPokemonData: Pokemon|null = await this.pokemonService.getDetailedPokemonInfo(name);
-    
-    if ( fullPokemonData == null )
-    {
-      console.log(`AppComponent: fetchDetailedPokemonData("${name}"): error: fullPokemonData is null`);
-      return;
-    }
-
-    this.detailedPokemonCount++;
-    this.loadingPercentage = Math.floor((this.detailedPokemonCount / this.maxItemsOnPage) * 100);
-    this.pagePokemonData[pageIndex] = fullPokemonData;
   }
 
   changePage(pageID: number) : void
   {
     if (pageID === this.currentPage) { return; }
-  
-    this.isLoading = true;
-    this.pagePokemonData = [];
+
+    this.loaderOverlay.percentage = 0;
+    this.loaderOverlay.header = 'Loading cache';
+    this.loaderOverlay.enabled = true;
+
     this.currentPage = pageID;
-    this.getPokeAPIData();
+    this.pagePokemonData = this.fullPokemonData.slice((this.currentPage * this.maxItemsOnPage), (this.currentPage * this.maxItemsOnPage) + this.maxItemsOnPage);
+
+    this.loaderOverlay.enabled = false;
   }
 
   async fetchPokemonCount() : Promise<void> { this.numberOfPokemons = await this.pokemonService.getPokemonCount(); }
@@ -103,6 +130,6 @@ export class PokemonListComponent {
   async ngOnInit()
   {
     await this.fetchPokemonCount();
-    this.getPokeAPIData();
+    this.buildInitialPageCache();
   }
 }

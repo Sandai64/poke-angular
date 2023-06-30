@@ -112,28 +112,13 @@ export class PokemonService {
     // Check cache beforehand
     const cachedPokemon = localStorage.getItem(`pokemon.${name}`);
 
-    if ( cachedPokemon && this.enableCaching )
+    if ( cachedPokemon )
     {
-      try
-      {
-        const deserializedCachedPokemon = JSON.parse(cachedPokemon);
-        const now = new Date().getTime();
-
-        // Only return if data isn't older than a day
-        if (  (now - deserializedCachedPokemon.createdAt) < 86400000 )
-        {
-          console.log(`pokemon-service: serving cached pokemon.${name}`);
-          return deserializedCachedPokemon.data;
-        } 
-      }
-      catch
-      {
-        console.log(`pokemon-service: failed to deserialize pokemon.${name}`);
-      }
-
-      console.log(`pokemon-service: invalidating cache for pokemon.${name}`);
-      localStorage.removeItem(`pokemon.${name}`);
+      console.log(`pokemon-service: cache hit! [pokemon.${name}]`);
+      return JSON.parse(cachedPokemon);
     }
+
+    console.warn(`pokemon-service: cache miss! [pokemon.${name}]`);
 
     let pokemonDetails;
     let pokemonSpecies;
@@ -145,6 +130,19 @@ export class PokemonService {
     }
     catch
     {
+      const pokemon: Pokemon = {
+        name: pokemonDetails.name,
+        index: undefined,
+        localizedNames: undefined,
+        abilities: undefined,
+        moves: undefined,
+        type: undefined,
+        weight: undefined,
+        sprite: undefined
+      };
+
+      localStorage.setItem(`pokemon.${name}`, JSON.stringify(pokemon));
+
       return null;
     }
 
@@ -180,12 +178,8 @@ export class PokemonService {
     if ( this.enableCaching )
     {
       // Store pokemon in cache w/ createdAt timestamp
-      const now = new Date().getTime();
-      console.log(`pokemon-service: caching pokemon.${name} with createdAt value`, now);
-      localStorage.setItem(`pokemon.${name}`, JSON.stringify({
-        createdAt: now,
-        data: pokemon,
-      }));
+      console.log(`pokemon-service: caching pokemon.${name}`);
+      localStorage.setItem(`pokemon.${name}`, JSON.stringify(pokemon));
     }
 
     return pokemon;
