@@ -185,6 +185,11 @@ export class PokemonService {
     return pokemon;
   }
 
+  clearCache() : void
+  {
+    localStorage.clear();
+  }
+
   // pokemonObservable: Observable<unknown> = new Observable(
   //   function subscribe(subscriber)
   //   {

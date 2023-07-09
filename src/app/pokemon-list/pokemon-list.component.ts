@@ -36,7 +36,6 @@ export class PokemonListComponent {
   // Services
   pokemonService: PokemonService = new PokemonService();
 
-
   // Methods
   async delay(time: number) : Promise<unknown>
   {
@@ -101,7 +100,6 @@ export class PokemonListComponent {
           this.loaderOverlay.percentage = 0;
           this.loaderOverlay.header = '';
           this.loaderOverlay.enabled = false;
-          // this.loadingDone = true;
 
           // Delegate page construction
           this.changePage(0);
@@ -131,5 +129,24 @@ export class PokemonListComponent {
   {
     await this.fetchPokemonCount();
     this.buildInitialPageCache();
+  }
+
+  async clearAllCache() : Promise<void>
+  {
+    this.pokemonService.clearCache();
+    
+    // Reset Properties
+    this.currentPage = null;
+    this.paginationKeys = null;
+    this.numberOfPokemons = 0;
+    this.detailedPokemonCount = 0;
+
+    this.fullPokemonData = [];
+    this.pagePokemonData = [];
+
+    this.loaderOverlay.percentage = 0;
+
+    // Override
+    this.ngOnInit();
   }
 }
