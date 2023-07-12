@@ -25,6 +25,11 @@ export class PokemonListComponent {
     status: '',
   };
 
+  detailedInfoOverlay = {
+    enabled: false,
+    pokemonDetails: {}
+  };
+
   numberOfPokemons = 0;
   detailedPokemonCount: number = 0;
 
@@ -134,7 +139,7 @@ export class PokemonListComponent {
   async clearAllCache() : Promise<void>
   {
     this.pokemonService.clearCache();
-    
+
     // Reset Properties
     this.currentPage = null;
     this.paginationKeys = null;
@@ -148,5 +153,20 @@ export class PokemonListComponent {
 
     // Override
     this.ngOnInit();
+  }
+
+  async showDetailedInfo(pokemonName: string) : Promise<void>
+  {
+    const fetchedInfo: Pokemon|null = await this.pokemonService.getDetailedPokemonInfo(pokemonName);
+    if (fetchedInfo === null) { return; }
+
+    this.detailedInfoOverlay.pokemonDetails = fetchedInfo;
+    this.detailedInfoOverlay.enabled = true;
+  }
+
+  hideDetailedInfo() : void
+  {
+    this.detailedInfoOverlay.enabled = false;
+    this.detailedInfoOverlay.pokemonDetails = {};
   }
 }

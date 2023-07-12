@@ -23,16 +23,16 @@
     <p class="italic text-sm m-2">{{ loaderOverlay.status }}</p>
     <progress max="100" [value]="loaderOverlay.percentage"></progress>
 </div>
-  
+
 <div *ngIf="!loaderOverlay.enabled" class="p-4">
     <h2 class="mb-4 text-sm">{{ pagePokemonData.length }} Pokémon(s) on this page (#<span class="font-semibold">{{ pagePokemonData.at(0)?.index ?? '???' }}</span> to #<span class="font-semibold">{{ pagePokemonData.at(-1)?.index ?? pagePokemonData.length }})</span></h2>
-  
+
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-        <app-pokemon-card *ngFor="let pokemonItem of pagePokemonData"  [pokemon]="pokemonItem"/>
+        <app-pokemon-card *ngFor="let pokemonItem of pagePokemonData" [pokemon]="pokemonItem" (click)="pokemonItem.name && showDetailedInfo(pokemonItem.name)" />
     </div>
-  
+
     <hr class="mt-4">
-  
+
     <footer class="p-4 flex flex-col justify-center items-center font-light text-gray-500 select-none">
         <p>Erwan Egasse · ESGI B3 AL</p>
         <a href="https://erwan.sh/" class="text-xs">erwan.sh</a>
