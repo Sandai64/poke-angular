@@ -8,13 +8,15 @@ import { LucideAngularModule, Compass, Loader, FileQuestion, ChevronRight, Unlin
 import { PokemonCardComponent } from './pokemon-card/pokemon-card.component';
 import { ErrorComponent } from './error/error.component';
 import { PokemonListComponent } from './pokemon-list/pokemon-list.component';
+import { DetailedInfoModalComponent } from './detailed-info-modal/detailed-info-modal.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     PokemonCardComponent,
     ErrorComponent,
-    PokemonListComponent
+    PokemonListComponent,
+    DetailedInfoModalComponent
   ],
   imports: [
     BrowserModule,
